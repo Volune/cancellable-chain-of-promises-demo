@@ -1,13 +1,16 @@
 const path = require('path');
 const express = require('express');
+const minimist = require('minimist');
 const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackConfig = require('./wepack.config');
 
 const DELAY = 1000; // ms
 
+const argv = minimist(process.argv.slice(2));
+
 const webpackDevServerOptions = {
-  publicPath: path.resolve(__dirname, 'assets'),
+  publicPath: '/',
 };
 
 const app = express();
@@ -20,5 +23,7 @@ app.post('/echo', (req, res) => {
     }
   }, DELAY)
 });
+app.use(express.static(path.resolve(__dirname, 'public')));
 app.use(webpackDevMiddleware(webpack(webpackConfig), webpackDevServerOptions));
-app.listen(5080);
+const port = typeof argv.port === 'number' ? argv.port : 5000;
+app.listen(port, () => console.info(`Listening to ${port}.`));
