@@ -9,8 +9,8 @@ const log = (msg) => {
 };
 
 // Fetch-like function supporting cancellation
-const request = (url, {method, body, cancelToken}) => {
-  const {token} = Cancellable(cancelToken);
+const request = (url, { method, body, cancelToken }) => {
+  const { token } = Cancellable(cancelToken);
   let abortListener;
   return new Promise(function (resolve, reject) {
     const xhr = new XMLHttpRequest();
@@ -43,29 +43,25 @@ const request = (url, {method, body, cancelToken}) => {
 
 // The actual code
 let lastAbort = null;
-input.oninput = ({target: {value: term}}) => {
+input.oninput = ({ target: { value: term } }) => {
   if (lastAbort) {
     lastAbort();
   }
-  const {token, abort} = Cancellable();
+  const { token, abort } = Cancellable();
   lastAbort = abort;
 
   log(`searching for "${term}"`);
   const method = 'POST';
   const url = '/echo';
-  const body = JSON.stringify({result: term.toUpperCase()});
+  const body = JSON.stringify({ result: term.toUpperCase() });
 
-  request(url, {method, body, cancelToken: token})
+  request(url, { method, body, cancelToken: token })
     ::token.then(response => JSON.parse(response))
-    ::token.then(({result}) => {
-    log(`results for "${term}": ${result}`);
-  })
-    ::token.catch((err) => {
-    log(`ERROR: ${err}`);
-  })
+    ::token.then(({ result }) => log(`results for "${term}": ${result}`))
+    ::token.catch((err) => log(`ERROR: ${err}`))
     ::token.always(() => {
-    if (lastAbort === abort) {
-      lastAbort = null;
-    }
-  });
+      if (lastAbort === abort) {
+        lastAbort = null;
+      }
+    });
 };
